@@ -190,7 +190,34 @@ calcDisplayPrintBalance(currentAccount);
 calcDisplaySummary(currentAccount);
 }
 let currentAccount;
+let timer;
 
+const startLogouttimer=function(){
+  
+  const tick=function(){
+    const min=String(Math.trunc(time/60)).padStart(2,0);
+    const sec=String(time%60).padStart(2,0);
+    labelTimer.textContent=`${min}:${sec}`;
+
+  
+  // when 0 sec stop timer and logout user
+  if(time==0){
+    clearInterval(timer);
+    labelWelcome.textContent='Log in to get started';
+    containerApp.style.opacity=0;
+  }
+    // decrease time by 1 sec
+    time--;
+
+  }
+  //set time to 5 mins
+  let time=120;
+  //call the timer every sec
+  tick();
+  const timer=setInterval(tick,1000);
+  return timer;
+  
+}
 //event handlers
 btnLogin.addEventListener('click',function(e){
   e.preventDefault();
@@ -226,7 +253,8 @@ btnLogin.addEventListener('click',function(e){
     //clear input fields
     inputLoginUsername.value = inputLoginPin.value= '' ;
     inputLoginPin.blur();
-
+    if(timer) clearInterval(timer);
+    timer=startLogouttimer();
     updateUI(currentAccount); 
   }
 });
@@ -246,20 +274,31 @@ btnTransfer.addEventListener('click',function(e){
     // push time to moments
     currentAccount.movementsDates.push(new Date().toISOString());
     receiverAcc.movementsDates.push(new Date().toISOString());
+    //update UI
     updateUI(currentAccount);
+
+    //reset timer
+    clearInterval(timer);
+    timer=startLogouttimer();
   }
 });
 btnLoan.addEventListener('click',function(e){
   e.preventDefault();
   const amount=Math.floor(inputLoanAmount.value);
   if(amount>0 && currentAccount.movements.some(mov=> mov >=amount*0.1)){
-    //add movement
+    
+    setTimeout(function(){//add movement
     currentAccount.movements.push(amount);
     currentAccount.movementsDates.push(new Date().toISOString());
     //update UI
     updateUI(currentAccount);
-    inputLoanAmount.value='';
-  }
+
+     //reset timer
+     clearInterval(timer);
+     timer=startLogouttimer();
+  },2000);
+;  }
+  inputLoanAmount.value='';
 })
 btnClose.addEventListener('click',function(e){
   e.preventDefault();
